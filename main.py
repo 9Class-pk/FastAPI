@@ -1,29 +1,34 @@
-from typing import Union
-from fastapi import FastAPI
-
-store_app = FastAPI() #application
-
-
-@store_app.get("/") #URLS
-def read_root(): #View
-    return {"Hello": "World123"}
-
-
-
-from typing import Optional
+import uvicorn
+from fastapi import FastAPI, HTTPException, Depends
+from store_app.db.models import  Product
+from store_app.db.schema import ProductOutSchema, ProductCreateSchema
+from store_app.db.database import  SessionLocal
+from sqlalchemy.orm import Session
 from typing import List
-from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy.orm import relationship
+from store_app.api import category, subcategory, product, auth
 
 
-class Base(DeclarativeBase):
-    pass
+
+async def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-class User(Base):
-    __tablename__ = "user_account"
+store = FastAPI()
+store.include_router(category.category_router)
+store.include_router(subcategory.subcategory_router)
+store.include_router(product.product_router)
+store.include_router(auth.auth_router)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(30))
+
+
+#Product/////////
+
+
+if __name__ == '__main__':
+    uvicorn.run(store, host='127.0.0.1', port=8080)
+
+
