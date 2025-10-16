@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from store_app.db.models import StatusChoices
 from datetime import datetime
 
@@ -14,6 +14,15 @@ class UserProfileSchema(BaseModel):
     phone_number: Optional[int]
     status: StatusChoices
     created_date: datetime
+    password: str
+
+    class Config:
+        form_attributes = True
+
+
+class UserProfileLoginSchema(BaseModel):
+
+    username: str
     password: str
 
     class Config:
@@ -66,6 +75,23 @@ class ProductCreateSchema(BaseModel):
         form_attributes = True
 
 
+class ProductImageOutSchema(BaseModel):
+    id: int
+    product_id: int
+    image: str
+
+    class Config:
+        form_attributes = True
+
+
+class ProductImageCreateSchema(BaseModel):
+    product_id: int
+    image: str
+
+    class Config:
+        form_attributes = True
+
+
 class RatingSchema(BaseModel):
     id: int
     product_id: int
@@ -75,3 +101,56 @@ class RatingSchema(BaseModel):
 
     class Config:
         form_attributes = True
+
+class CartItemSchema(BaseModel):
+    id: int
+    cart_id: int
+    product_id: int
+
+    class Config:
+        form_attributes = True
+
+
+class CartSchema(BaseModel):
+    user_id: int
+    items: List[CartItemSchema] = []
+    total_price: int
+
+    class Config:
+        from_attributes = True
+
+
+class CartItemCreateSchema(BaseModel):
+    product_id: int
+    quantity: Optional[int] = 1
+
+    class Config:
+        from_attributes = True
+
+
+class FavouriteItemSchema(BaseModel):
+    id: int
+    favourite_id: int
+    product_id: int
+
+    class Config:
+        form_attributes = True
+
+
+class FavouriteSchema(BaseModel):
+    id: int
+    user_id: int
+    favourite_items: List[FavouriteItemSchema] = []
+
+    class Config:
+        form_attributes = True
+
+
+class FavouriteItemCreateSchema(BaseModel):
+    product_id: int
+
+    class Config:
+        from_attributes = True
+
+
+

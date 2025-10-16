@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, APIRouter
+from fastapi import  HTTPException, Depends, APIRouter
 from store_app.db.models import Category
 from store_app.db.schema import CategorySchema
 from store_app.db.database import  SessionLocal

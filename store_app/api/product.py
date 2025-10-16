@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, APIRouter
+from fastapi import HTTPException, Depends, APIRouter
 from store_app.db.models import Product
 from store_app.db.schema import ProductOutSchema, ProductCreateSchema
 from store_app.db.database import  SessionLocal
@@ -63,3 +63,5 @@ async def delete_product(product_id: int, db:Session = Depends(get_db)):
     db.delete(product_db)
     db.commit()
     return  {'message': 'Deleted'}
+
+

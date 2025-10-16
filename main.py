@@ -5,7 +5,11 @@ from store_app.db.schema import ProductOutSchema, ProductCreateSchema
 from store_app.db.database import  SessionLocal
 from sqlalchemy.orm import Session
 from typing import List
-from store_app.api import category, subcategory, product, auth
+from store_app.api import category, subcategory, product, auth, upload, cart, favourite
+from store_app.admin.setup import setup_admin
+import os
+from fastapi.staticfiles import StaticFiles
+from store_app import static
 
 
 
@@ -22,9 +26,26 @@ store.include_router(category.category_router)
 store.include_router(subcategory.subcategory_router)
 store.include_router(product.product_router)
 store.include_router(auth.auth_router)
+store.include_router(upload.upload_router)
+store.include_router(cart.cart_router)
+store.include_router(favourite.favourite_router)
+
+setup_admin(store)
 
 
 
+
+
+
+
+
+
+
+#StaticFiles for images////////////
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "store_app", "static")
+
+store.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 #Product/////////
 
 
