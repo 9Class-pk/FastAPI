@@ -1,9 +1,10 @@
-from fastapi import HTTPException, Depends, APIRouter
+from fastapi import HTTPException, Depends, APIRouter, Security
 from store_app.db.models import Product
 from store_app.db.schema import ProductOutSchema, ProductCreateSchema
 from store_app.db.database import  SessionLocal
 from sqlalchemy.orm import Session
 from typing import List
+from store_app.api.auth import get_current_user
 
 
 
@@ -19,7 +20,10 @@ product_router = APIRouter(prefix='/product', tags=['Product'])
 
 
 @product_router.post("/", response_model=ProductCreateSchema)
-async def create_product(product: ProductCreateSchema, db:Session = Depends(get_db)):
+async def create_product(product: ProductCreateSchema, db:Session = Depends(get_db),
+                         current_user: dict = Security(get_current_user, scopes=["product:write"])):
+    user_id = current_user["user_id"]
+
     product_db = Product(**product.dict())
     db.add(product_db)
     db.commit()
@@ -28,12 +32,16 @@ async def create_product(product: ProductCreateSchema, db:Session = Depends(get_
 
 
 @product_router.get("/", response_model=List[ProductOutSchema])
-async def list_product(db: Session = Depends(get_db)):
+async def list_product(db: Session = Depends(get_db),
+                       current_user: dict = Security(get_current_user,
+                                                     scopes=["product:read"])):
     return db.query(Product).all()
 
 
 @product_router.get("/{product_id}/", response_model=ProductCreateSchema)
-async def detail_product(product_id: int, db: Session = Depends(get_db)):
+async def detail_product(product_id: int, db: Session = Depends(get_db),
+                         current_user: dict = Security(get_current_user,
+                                                       scopes=["product:read"])):
     product_db = db.query(Product).filter(Product.id==product_id).first()
     if product_db is None:
         raise HTTPException(status_code=404, detail='Нету такого продукат')
@@ -41,7 +49,9 @@ async def detail_product(product_id: int, db: Session = Depends(get_db)):
 
 
 @product_router.put("/{product_id}/")
-async def update_product(product: ProductCreateSchema, product_id: int, db: Session = Depends(get_db)):
+async def update_product(product: ProductCreateSchema, product_id: int, db: Session = Depends(get_db),
+                         current_user: dict = Security(get_current_user,
+                                                       scopes=["product:write"])):
     product_db = db.query(Product).filter(Product.id == product_id).first()
     if not product_db:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -56,7 +66,9 @@ async def update_product(product: ProductCreateSchema, product_id: int, db: Sess
 
 
 @product_router.delete("/{product_id}/")
-async def delete_product(product_id: int, db:Session = Depends(get_db)):
+async def delete_product(product_id: int, db:Session = Depends(get_db),
+                         current_user: dict = Security(get_current_user,
+                                                       scopes=["product:write"])):
     product_db = db.query(Product). filter(Product.id == product_id).first()
     if product_db is None:
         raise HTTPException(status_code=404, detail='Нету такой категории')

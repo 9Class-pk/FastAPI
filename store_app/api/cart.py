@@ -1,9 +1,9 @@
-from fastapi import HTTPException, Depends, APIRouter
+from fastapi import HTTPException, Depends, APIRouter, Security
 from store_app.db.models import Product, Cart, CartItem, UserProfile
 from store_app.db.schema import CartSchema, CartItemSchema, CartItemCreateSchema
 from store_app.db.database import  SessionLocal
 from sqlalchemy.orm import Session
-
+from store_app.api.auth import get_current_user
 
 
 async def get_db():
@@ -18,7 +18,9 @@ cart_router = APIRouter(prefix='/cart', tags=['Cart'])
 
 
 @cart_router.get('/', response_model=CartSchema)
-async def get_cart(user_id: int, db: Session = Depends(get_db)):
+async def get_cart(user_id: int, db: Session = Depends(get_db),
+                   current_user: dict = Security(get_current_user, scopes=["cart:read"])):
+    user_id = current_user["user_id"]
     cart = db.query(Cart).filter(Cart.user_id == user_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail='Cart not found')
@@ -27,7 +29,9 @@ async def get_cart(user_id: int, db: Session = Depends(get_db)):
 
 # Добавить товар в корзину или обновить количество
 @cart_router.post('/item/', response_model=CartItemSchema)
-async def add_or_update_cart_item(item_data: CartItemCreateSchema, user_id: int, db: Session = Depends(get_db)):
+async def add_or_update_cart_item(item_data: CartItemCreateSchema, user_id: int, db: Session = Depends(get_db),
+                                  #scope(permissions)
+                                  current_user: dict = Security(get_current_user, scopes=["cart:write"])):
     # Проверяем пользователя
     user = db.query(UserProfile).filter(UserProfile.id == user_id).first()
     if not user:
@@ -35,6 +39,7 @@ async def add_or_update_cart_item(item_data: CartItemCreateSchema, user_id: int,
 
     # Проверяем корзину
     cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+    user_id = current_user["user_id"]
     if not cart:
         cart = Cart(user_id=user_id)
         db.add(cart)
@@ -66,7 +71,10 @@ async def add_or_update_cart_item(item_data: CartItemCreateSchema, user_id: int,
 
 # Удалить товар из корзины
 @cart_router.delete('/item/{product_id}/')
-async def delete_cart_item(product_id: int, user_id: int, db: Session = Depends(get_db)):
+async def delete_cart_item(product_id: int, user_id: int, db: Session = Depends(get_db),
+                           current_user: dict = Security(get_current_user, scopes=["cart:write"])
+                           ):
+    user_id = current_user["user_id"]
     cart = db.query(Cart).filter(Cart.user_id == user_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail='Cart not found')
