@@ -61,10 +61,21 @@ class Category(Base):
     category_image: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     subcategories: Mapped[List['SubCategory']] = relationship(back_populates='category',
                                                               cascade='all, delete-orphan')
+    category_images: Mapped[List['CategoryImage']] = relationship(back_populates='category',
+                                                                  cascade='all, delete-orphan')
+
 
     def __repr__(self):
         return f'{self.category_name}'
 
+
+class CategoryImage(Base):
+    __tablename__ = 'category_image'
+
+    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
+    category_image: Mapped[str] = mapped_column(String, nullable=False)
+    category_id: Mapped[int] = mapped_column(ForeignKey('category.id'))
+    category: Mapped[Category] = relationship(back_populates='category_images')
 
 
 class SubCategory(Base):
@@ -79,6 +90,7 @@ class SubCategory(Base):
 
     def __repr__(self):
         return f'{self.sub_category_name}'
+
 
 
 class Product(Base):
@@ -114,7 +126,7 @@ class ProductImage(Base):
     id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
     product_id: Mapped[int] = mapped_column(ForeignKey('product.id'))
     product: Mapped[Product] = relationship(back_populates='product_images')
-    image: Mapped[str] = mapped_column(String, nullable=False)
+    product_image: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class Rating(Base):

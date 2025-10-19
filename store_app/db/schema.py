@@ -37,6 +37,11 @@ class CategorySchema(BaseModel):
         form_attributes = True
 
 
+class CategoryImageSchema(BaseModel):
+    id: int
+    category_image: str
+
+
 class SubCategorySchema(BaseModel):
     id: int
     sub_category_name: str
@@ -78,7 +83,7 @@ class ProductCreateSchema(BaseModel):
 class ProductImageOutSchema(BaseModel):
     id: int
     product_id: int
-    image: str
+    product_image: str
 
     class Config:
         form_attributes = True
@@ -154,3 +159,11 @@ class FavouriteItemCreateSchema(BaseModel):
 
 
 
+class UploadImageResponse(BaseModel):
+    id: int
+    image: str
+    product_id: Optional[int] = None
+    category_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True

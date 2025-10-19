@@ -22,7 +22,7 @@ class ProductAdmin(ModelView, model=Product):
 
 
 class ProductImageAdmin(ModelView, model=ProductImage):
-    column_list = [ProductImage.id, ProductImage.image]
+    column_list = [ProductImage.id, ProductImage.product_image]
 
 
 class RatingAdmin(ModelView, model=Rating):

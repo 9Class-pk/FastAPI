@@ -12,6 +12,8 @@ import os
 from fastapi.staticfiles import StaticFiles
 from store_app import static
 from starlette.middleware.sessions import SessionMiddleware
+from store_app.middlewares.middleware import LoggingMiddleware
+
 
 
 async def get_db():
@@ -37,9 +39,9 @@ store.include_router(social_auth.social_router)
 
 setup_admin(store)
 
-#oauth middleware
+#oauth middlewares
 store.add_middleware(SessionMiddleware, secret_key="SECRET_KEY")
-
+store.add_middleware(LoggingMiddleware)
 
 
 
@@ -49,13 +51,28 @@ store.add_middleware(SessionMiddleware, secret_key="SECRET_KEY")
 
 #StaticFiles for images////////////
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "store_app", "static")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 store.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 #Product/////////
+from fastapi.responses import HTMLResponse
 
+@store.get("/", response_class=HTMLResponse)
+async def home():
+    return """
+    <html>
+        <head>
+            <title>Store</title>
+        </head>
+        <body>
+            <h1>Salam Aleikum</h1>
+            <p>Документация: <a href="/docs">Swagger</a></p>
+        </body>
+    </html>
+    """
 
 if __name__ == '__main__':
     uvicorn.run(store, host='127.0.0.1', port=8080)
+
 
 
